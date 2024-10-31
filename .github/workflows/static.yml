@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist Netfagá</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .banner {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: green;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        input[type="date"] {
+            margin-right: 10px;
+        }
+        .status-button {
+            padding: 5px 10px;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .nao-realizado {
+            background-color: red;
+        }
+        .realizado {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <img src="https://netfaga.com.br/wp-content/uploads/2023/12/LOGO-ALTA-RESOLUCAO-VERDE-CORRIGIDO-300x85.png" alt="Netfagá Logo">
+    </div>
+    <h1>Checklist de Tarefas de T.I.</h1>
+    <ul id="checklist">
+        <!-- As tarefas serão adicionadas aqui -->
+    </ul>
+    <button id="gerar-html">Gerar Relatório</button>
+    <script>
+        const tarefas = [
+            "Verificar estoque loja e fazer contagem semanal",
+	    "Verificar localização no Inmap Service",
+            "Fazer pelo menos 01 atenuação por dia",
+	    "Ligar para atendimentos de manutenção do ultimo mês e verificar como está a conexão",
+            "Entrada de produtos/compra",
+            "Acompanhar documentação de rede feita pelos técnicos",
+            "Ajuda na organização da loja",
+            "Acompanhar manutenções de infra",
+            "Atualizar lista de equipamento manutenção",
+            "Verificar localização clientes no mapa",
+            "Sempre que fizer um atendimento, verificar se já houve reclamação recente, caso tenha, abrir chamado",
+            "Pós venda",
+            "Acompanhar status da OS",
+            "Verificar atendimentos OPA",
+            "Verificar clientes com LOS no U2000 e IXC",
+            "Liberar técnicos",
+            "Acompanhar andamento das OS dos técnicos",
+            "Verificar estoque carros",
+            "Verificar ordem de serviço fechada (material e fotos)",
+            "Resetar e guardar ONUs retiradas",
+            "Ativar ramal / sempre que sair desligar ramal",
+            "Manter local de trabalho organizado",
+            "Manter máquina de fusão e OTDR sempre carregadas e organizadas (a cada 15 dias)",
+            "Acompanhar atenuações diariamente",
+            "Verificar pelo menos 2 vezes por período como estão os andamentos das ordens de serviço",
+            "Relatório de equipamentos retirados",
+            "Relatório de ordem de serviço finalizadas",
+            "Relatório de ordem de serviço abertas",
+            "Relatório de ordens de serviços agendadas no período da manhã",
+            "Relatório de cancelamentos",
+            "Relatório de clientes offline",
+            "Relatório de ordem de serviço finalizadas no período da manhã",
+            "Relatório de ordens de serviços finalizadas no período da tarde",
+            "Verificar organização e limpeza dos carros",
+            "Fazer requisição de compra dos materiais necessários",
+            "Organizar entrega de carnês"
+        ];
+
+        const checklistContainer = document.getElementById('checklist');
+
+        tarefas.forEach(tarefa => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="tarefa-text">${tarefa}</span>
+                <div>
+                    <input type="date" class="data-input">
+                    <input type="text" placeholder="Observação" class="obs-input">
+                    <button class="status-button nao-realizado">Não Realizado</button>
+                </div>
+            `;
+            checklistContainer.appendChild(li);
+
+            const statusButton = li.querySelector('.status-button');
+            statusButton.addEventListener('click', () => {
+                if (statusButton.classList.contains('nao-realizado')) {
+                    statusButton.textContent = 'Realizado';
+                    statusButton.classList.remove('nao-realizado');
+                    statusButton.classList.add('realizado');
+                } else {
+                    statusButton.textContent = 'Não Realizado';
+                    statusButton.classList.remove('realizado');
+                    statusButton.classList.add('nao-realizado');
+                }
+            });
+        });
+
+        document.getElementById('gerar-html').addEventListener('click', () => {
+            const tabelaChecklist = [];
+            const rows = document.querySelectorAll('#checklist li');
+
+            rows.forEach(row => {
+                const tarefa = row.querySelector('.tarefa-text').textContent.trim();
+                const data = row.querySelector('.data-input').value;
+                const obs = row.querySelector('.obs-input').value;
+                const status = row.querySelector('.status-button').textContent;
+
+                if (tarefa) {
+                    tabelaChecklist.push({ tarefa, data, obs, status });
+                }
+            });
+
+            if (tabelaChecklist.length > 0) {
+                gerarRelatorio(tabelaChecklist);
+            } else {
+                alert('Não há tarefas para exibir no relatório.');
+            }
+        });
+
+        function gerarRelatorio(tabelaChecklist) {
+            const agora = new Date();
+            const horas = agora.getHours();
+            const minutos = agora.getMinutes();
+
+            let nomeRelatorio;
+            if (horas >= 8 && horas < 12) {
+                nomeRelatorio = "Relatorio de Tarefas do período da Manha.html";
+            } else if (horas === 12 && minutos === 0) {
+                nomeRelatorio = "Relatorio de Tarefas do período da Manha.html";
+            } else {
+                nomeRelatorio = "Relatorio de Tarefas do período da tarde.html";
+            }
+
+            let conteudoHTML = `
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${nomeRelatorio}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                        .realizado { background-color: green; color: white; }
+                        .nao-realizado { background-color: red; color: white; }
+                        .risco { text-decoration: line-through; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${nomeRelatorio}</h1>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Tarefa</th>
+                                <th>Data</th>
+                                <th>Observação</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            tabelaChecklist.forEach(item => {
+                const statusClass = item.status === "Realizado" ? "realizado" : "nao-realizado";
+                conteudoHTML += `
+                    <tr>
+                        <td><input type="checkbox" class="check-input" onclick="this.parentNode.parentNode.querySelector('.tarefa-text').classList.toggle('risco');"></td>
+                        <td class="tarefa-text">${item.tarefa}</td>
+                        <td>${item.data}</td>
+                        <td>${item.obs}</td>
+                        <td class="${statusClass}">${item.status}</td>
+                    </tr>
+                `;
+            });
+
+            conteudoHTML += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([conteudoHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nomeRelatorio;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
